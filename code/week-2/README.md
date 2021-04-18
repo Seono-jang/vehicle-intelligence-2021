@@ -28,7 +28,7 @@ If you run the program (`main.py`) without any modification to the code, it will
 
 ## Assignment	
 
-**(1) Motion Model
+(1) Motion Model
 
 
     def motion_model(position, mov, priors, map_size, stdev):
@@ -52,7 +52,7 @@ Motion Model은 차량이 이전 위치에서 Control Input으로 인해 움직�
 
         
 
-**(2) Observer Model
+(2) Observer Model
 
 
     # Observation model (assuming independent Gaussian)
