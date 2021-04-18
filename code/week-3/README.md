@@ -6,7 +6,7 @@
 - 과제 목표
   이 과제의 목표는 Radar와 Lidar로 부터 얻은 정보를 바탕으로 임의의 Dynamic Object의 위치를 추정하고 Radar와 Lidar 각각의 정보를 Sensor Fusion 하여 Object들의 정확한 위치를 추정해 내는 것입니다.
   Lidar는 물체의 위치를 (x,y)좌표로 나타낼 수 있는 반면 Radar는 상대 거리와 상대 각도만을 알 수 있으므로 시스템 모델이 다르게 표현됩니다.
-  Radar의 경우 상대 거리와 상대 각도를 (x,y) 좌표로 나타내기 위해 비선형 방정식을 풀어 내야 하므로 Jacobian 행렬식을 구하여 선형화를 해주어야합니다.
+  Radar의 경우 상대 거리와 상대 각도를 (x,y)에 대하여 비선형성을 나타내므로 Jacobian 행렬식을 구하여 선형화를 해주어야합니다.
 
 - Update EKF
  Update_EKF는 Radar로부터 관측된 Object들의 상대 거리와 각도로 부터 Extended Kalman Filter를 사용해 물체의 (x,y) 위치를 추정하는 함수입니다.
@@ -37,7 +37,7 @@
 
 각 timestep에서 Object의위치값과 오차 공분산의 예측값을 받아와 Extended Kalman Filter로 추정값을 계산해내는 부분입니다.
 
-먼저 Radar 데이터를 (x,y)좌표로 표현 하기 위해 Jacobian 행렬식을 활용해 선형화를 해주었습니다.
+먼저 Radar 데이터를 Jacobian 행렬식을 활용해 선형화를 해주었습니다.
 Jacobian 행렬식에 대한 구현은 tools.py에 구현하였으며 구현식은 다음과 같습니다.	
 
     def output_matrix(x):
