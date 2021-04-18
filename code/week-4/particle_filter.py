@@ -1,6 +1,7 @@
 import numpy as np
 from helpers import distance
-from helpers import norm_pdf
+import copy
+from math import exp
 
 class ParticleFilter:
     def __init__(self, num_particles):
@@ -94,6 +95,8 @@ class ParticleFilter:
         #    for all the observations.
         # 5. Update the particle's weight by the calculated probability.
         
+        
+        
         for p in self.particles:
             visible_landmark = []
             for landmark_id in map_landmarks:
@@ -116,66 +119,43 @@ class ParticleFilter:
             
             #3 Associate each transformed observation to one of the predicted landmark positions
             #p['assoc'] 
+            if not visible_landmark:
+                continue
             associations = self.associate(visible_landmark,coordinate_transform)
-            '''
-            x_weight = np.array([])
-            y_weight = np.array([])
-            '''
-            weight = 1
+
+            
             #num = 0
+            p_association = []
             for i in range(len(associations)):
-                x_weight_pre = norm_pdf(coordinate_transform[i]['x'],associations[i]['x'],std_landmark_x)
-                y_weight_pre = norm_pdf(coordinate_transform[i]['y'],associations[i]['y'],std_landmark_y)
-                weight *= x_weight_pre*y_weight_pre
-                #num +=1
                 
+                one_over_sqrt_2pi = 1 / (2 * np.pi*std_landmark_x*std_landmark_y)
+                
+                z = ((coordinate_transform[i]['x'] - associations[i]['x'])**2 / std_landmark_x**2 + (coordinate_transform[i]['y'] - associations[i]['y'])**2 / std_landmark_y**2)
+                weight = (one_over_sqrt_2pi) * exp(-0.5*z) + 1e-10
+                p_association.append(associations[i]['id'])
+
             p['w'] = weight
-            
-            
-        
-
-            '''for i in coordinate_transform:
-                x_w = 1
-                y_w = 1
-                
-                for v in visible_landmark
-
-                x_w *=norm_pdf(z,x,std_landmark_x)
-                x_w *=norm_pdf(z,y,std_landmark_y)'''
-
-
-            
-            
-
-
-
+            p['assoc'] = p_association
 
     # Resample particles with replacement with probability proportional to
     #   their weights.
     def resample(self):
         
-        pf_re = []
-        M = self.num_particles
-        r = np.random.uniform(0,M**-1)
-        c = self.particles[0]['w']
-
-        '''
-        i = 0
-        for m in range(M):
-            U = r + m*(M**-1)
-            while U > c:
-                i +=1
-                c = c + self.particles[i]['w']
-            pf_re.append(self.particles[i])
-        self.particles = pf_re
-        return self.particles
-        '''
-        
+        new_particles = []
+        weights = []
+        for p in self.particles:
+            weights.append(p['w'])
             
-                
-                
+        weights /= np.sum(weights)
         
+        idx = np.random.choice(self.num_particles,self.num_particles,p=weights)
         
+        for i in idx:
+            new_particles.append(copy.deepcopy(self.particles[i]))
+        
+        self.particles = new_particles
+        
+
         
         # TODO: Select (possibly with duplicates) the set of particles
         #       that captures the posteior belief distribution, by
