@@ -45,14 +45,8 @@ def motion_model(position, mov, priors, map_size, stdev):
     for i in range(map_size):
         position_prob += norm_pdf(position-i, mov ,stdev)*priors[i]
         
-    
-    fx = []
-    
-    for i in range(map_size):
-        fx.append(norm_pdf(position-i, mov ,stdev)*priors[i])
-    
+
         
-    
 
     # TODO: Loop over state space for all possible prior positions,
     # calculate the probability (using norm_pdf) of the vehicle
@@ -89,40 +83,7 @@ def observation_model(landmarks, observations, pseudo_ranges, stdev):
     #     mu: expected mean distance, given by pseudo_ranges
     #     sig: squared standard deviation of measurement
     return distance_prob
-'''
-def motion_model(position, mov, priors, map_size, stdev):
-    # Initialize the position's probability to zero.
-    position_prob = 0
-    for i in range(map_size):
-           position_prob += norm_pdf(25-i, mov, stdev)*priors[i]
-    # TODO: Loop over state space for all possible prior positions,
-    # calculate the probability (using norm_pdf) of the vehicle
-    # moving to the current position from that prior.
-    # Multiply this probability to the prior probability of
-    # the vehicle "was" at that prior position.
-    return position_prob
 
-# Observation model (assuming independent Gaussian)
-def observation_model(landmarks, observations, pseudo_ranges, stdev):
-    # Initialize the measurement's probability to one.
-    distance_prob = 1
-    if (observations == [])|(len(observations)>len(pseudo_ranges)):
-        distance_prob = 0
-    else:
-        for i in range(len(observations)):
-            distance_prob *= norm_pdf(observations[i], pseudo_ranges[i], stdev)
-    # TODO: Calculate the observation model probability as follows:
-    # (1) If we have no observations, we do not have any probability. 0으로 처리
-    # (2) Having more observations than the pseudo range indicates that
-    #     this observation is not possible at all. 더많이 계측하면 있을수 없으니까 0으로 처리
-    # (3) Otherwise, the probability of this "observation" is the product of
-    #     probability of observing each landmark at that distance, where
-    #     that probability follows N(d, mu, sig) with
-    #     d: observation distance
-    #     mu: expected mean distance, given by pseudo_ranges
-    #     sig: squared standard deviation of measurement
-    return distance_prob
-'''
 # Normalize a probability distribution so that the sum equals 1.0.
 def normalize_distribution(prob_dist):
     normalized = [0.0] * len(prob_dist)
