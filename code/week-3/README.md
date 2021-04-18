@@ -1,102 +1,87 @@
-# Week 3 - Kalman Filters, EKF and Sensor Fusion
-
-### Assignment
-
-Complete the implementation of EKF with sensor fusion by writing the function `update_ekf()` in the module `kalman_filter`. Details are given in class and instructions are included in comments.
-
-[HW_week3]
-Update Extended Kalman filter
-
-- EKF는 기존의 Kalman Filter와 유사하나 선형화하는 기준점을 계속 갱신한다는 특징을 가지고 있다.
-EKF 업데이트는 레이더 관측을 활용한다.         
-        
-       def update_ekf(self, z):
-        # TODO: Implement EKF update for radar measurements       
-        # 1. Compute Jacobian Matrix H_j
-        px, py, vx, vy = self.x
-        H_j = Jacobian(self.x)
-         
-- 자코비안(Jacobian) 행렬은 원소들이 모두 1차 미분 계수로 구성되어 있으며, 미소 영역에서 ‘비선형 변환’을 ‘선형 변환으로 근사화 시키는 것이 특징이다.
-Jacobian 함수를 이용하여 상태변수 Jacobian 행렬을 계산한다.        
-        
-        # 2. Calculate S = H_j * P' * H_j^T + R
-        S = np.dot(np.dot(H_j, self.P), H_j.T) + self.R
-      
-- Kalman Gain "k" 를 구하기 위해 (자코비안 행렬 * 예측 공분산 P * 측정 에러 공분산 R)을 계산한다.      
-        
-        # 3. Calculate Kalman gain K = H_j * P' * H_j^T + R
-        K = np.dot(np.dot(self.P, H_j.T), np.linalg.inv(S))
-        
-- Kalman Gain "K" 계산      
-        
-        # 4. Estimate y = z - h(x')
-        y = z - [sqrt(px*px+py*py), atan2(py,px), (px*vx+py*vy)/sqrt(px*px+py*py)]
-        
-- 레이더 관측 변수 "z" 와 관측 상태변수 "y" 차이로 에러를 구한다.
-        
-        # 5. Normalize phi so that it is between -PI and +PI
-        while (y[1] > pi): y[1] -= 2*pi
-        while (y[1] < -pi): y[1] += 2*pi
-            
-- 관측 변수의 단위는 라디안(rad)이고, 모든 각도를 pi : -pi 사이의 값을 가질 수 있다.
-위 각도 범위를 벗어나지 않도록 조건을 생성한다.          
-            
-        # 6. Calculate new estimates
-        #    x = x' + K * y
-        #    P = (I - K * H_j) * P
-        self.x = self.x + np.dot(K, y)
-        self.P = self.P - np.dot(np.dot(K, H_j), self.P)
-
-- 예측 상태변수 "x" 와 관측 에러 "y", Kalman Gain "K" 를 활용하여 새로운 예측 상태변수 "x" 를 구할 수 있다.
-새로운 공분산 "P" 도 자코비안 "H_j" 와 Kalman Gain "K" 를 활용하여 계산할 수 있다.
-
-- 측정 에러와 새로운 예측을 반복하여 매 Sample 마다 위치 예측을 갱신한다.
+# Week 2 - Markov Localization
 
 ---
 
 [//]: # (Image References)
-[kalman-result]: ./kalman_filter/graph.png
-[EKF-results]: ./EKF/plot.png
+[plot]: ./markov.gif
 
-## Kalman Filter Example
+## Assignment
 
-In directory [`./kalman_filter`](./kalman_filter), a sample program for a small-scale demonstration of a Kalman filter is provided. Run the following command to test:
+You will complete the implementation of a simple Markov localizer by writing the following two functions in `markov_localizer.py`:
 
-```
-$ python testKalman.py
-```
+* `motion_model()`: For each possible prior positions, calculate the probability that the vehicle will move to the position specified by `position` given as input.
+* `observation_model()`: Given the `observations`, calculate the probability of this measurement being observed using `pseudo_ranges`.
 
-This program consists of four modules:
+The algorithm is presented and explained in class.
 
-* `testKalman.py` is the module you want to run; it initializes a simple Kalman filter and estimates the position and velocity of an object that is assumed to move at a constant speed (but with measurement error).
-* `kalman.py` implements a basic Kalman fitler as described in class.
-* `plot.py` generates a plot in the format shown below.
-* `data.py` provides measurement and ground truth data used in the example.
+All the other source files (`main.py` and `helper.py`) should be left as they are.
 
-The result of running this program with test input data is illustrated below:
+If you correctly implement the above functions, you expect to see a plot similar to the following:
 
-![Testing of Kalman Filter Example][kalman-result]
+![Expected Result of Markov Localization][plot]
 
-Interpretation of the above results is given in the lecture.
-
-In addition, you can run `inputgen.py` to generate your own sample data. It will be interesting to experiment with a number of data sets with different characteristics (mainly in terms of variance, i.e., noise, involved in control and measurement).
+If you run the program (`main.py`) without any modification to the code, it will generate only the frame of the above plot because all probabilities returned by `motion_model()` are zero by default.
 
 ---
 
-## Assignment - EFK & Sensor Fusion Example
+# HW_01 Markov Localizaion
 
-In directory [`./EKF`](./EKF), template code is provided for a simple implementation of EKF (extended Kalman filter) with sensor fusion. Run the following command to test:
+## Assignment
 
-```
-$ python run.py
-```
+- 과제 목표
+  이 과제의 목표는 Radar와 Lidar로 부터 얻은 정보를 바탕으로 임의의 Dynamic Object의 위치를 추정하고 Radar와 Lidar 각각의 정보를 Sensor Fusion 하여 Object들의 정확한 위치를 추정해 내는 것입니다.
+  Lidar는 물체의 위치를 (x,y)좌표로 나타낼 수 있는 반면 Radar는 상대 거리와 상대 각도만을 알 수 있으므로 시스템 모델이 다르게 표현됩니다.
+  Radar의 경우 상대 거리와 상대 각도를 (x,y) 좌표로 나타내기 위해 비선형 방정식을 풀어 내야 하므로 Jacobian 행렬식을 구하여 선형화를 해주어야합니다.
 
-The program consists of five modules:
+- Update EKF
+ Update_EKF는 Radar로부터 관측된 Object들의 상대 거리와 각도로 부터 Extended Kalman Filter를 사용해 물체의 (x,y) 위치를 추정하는 함수입니다.
+	
+    def update_ekf(self, z):
+        # TODO: Implement EKF update for radar measurements
+        # 1. Compute Jacobian Matrix H_j
+        # 2. Calculate S = H_j * P' * H_j^T + R
+        # 3. Calculate Kalman gain K = H_j * P' * Hj^T + R
+        # 4. Estimate y = z - h(x')
+        # 5. Normalize phi so that it is between -PI and +PI
+        # 6. Calculate new estimates
+        #    x = x' + K * y
+        #    P = (I - K * H_j) * P
+        if z[1] < 0 :
+            z[1] = z[1] + 2*np.pi
+        
+        self.H_j = Jacobian(self.x)
+        
+        S = np.dot(np.dot(self.H_j, self.P), self.H_j.T) + self.R
+        K = np.dot(np.dot(self.P, self.H_j.T), np.linalg.inv(S))
+        y = z - output_matrix(self.x)
+        print(output_matrix(self.x))
+        #print(self.x)
+        self.x = self.x + np.dot(K,y)
+        
+        self.P = self.P - np.dot(np.dot(K, self.H_j), self.P)
 
-* `run.py` is the modele you want to run. It reads the input data from a text file ([data.txt](./EKF/data.txt)) and feed them to the filter; after execution summarizes the result using a 2D plot.
-* `sensor_fusion.py` processees measurements by (1) adjusting the state transition matrix according to the time elapsed since the last measuremenet, and (2) setting up the process noise covariance matrix for prediction; selectively calls updated based on the measurement type (lidar or radar).
-* `kalman_filter.py` implements prediction and update algorithm for EKF. All the other parts are already written, while completing `update_ekf()` is left for assignment. See below.
-* `tools.py` provides a function `Jacobian()` to calculate the Jacobian matrix needed in our filter's update algorithm.
-*  `plot.py` creates a 2D plot comparing the ground truth against our estimation. The following figure illustrates an example:
+각 timestep에서 Object의위치값과 오차 공분산의 예측값을 받아와 Extended Kalman Filter로 추정값을 계산해내는 부분입니다.
 
-![Testing of EKF with Sensor Fusion][EKF-results]
+먼저 Radar 데이터를 (x,y)좌표로 표현 하기 위해 Jacobian 행렬식을 활용해 선형화를 해주었습니다.
+Jacobian 행렬식에 대한 구현은 tools.py에 구현하였으며 구현식은 다음과 같습니다.	
+
+    def output_matrix(x):
+        px, py, vx, vy = x
+        if px == 0 and py == 0:
+            print("Error: both px and py are zero while trying to")
+            print("       calculate the output matrix.")
+            return np.zeros(3)
+        H_x = np.array([
+            sqrt(px*px + py*py),
+            atan2(py,px),
+            (px * vx + py * vy) / sqrt(px * px + py * py)
+        ])
+         
+        if H_x[1] < 0 :
+            H_x[1] = H_x[1] + 2*np.pi
+             
+        return H_x
+
+측정 값에서 받아오는 상대각도가 180도를 넘어가는 시점에서 (-)로 전환되는 문제가 있어 상대각도가 (-)부호가 될때 2pi 만큼 더해주었습니다.
+
+이 후 각각 timestep마다 받아오는 측정값과 예측값의 오차를 Kalman Filter를 활용하여 Object의 위치값을 추정할 수 있습니다.
