@@ -12,21 +12,21 @@
  - 주어진 학습 Data 값을 활용해 각각 Action에 따른 [s, d, s_dot, d_dot] 값의 평균/분산을 구하는 알고리즘입니다.
 
 
-
-      def train(self, X, Y):
-        '''
-        Collect the data and calculate mean and standard variation
-        for each class. Record them for later use in prediction.
-        '''
-        # TODO: implement code.
-        Train = {}
-        for label in self.classes:
-            Train[label] = []
-        for label in Train:
-            for i in range(len(X)):
-                if label == Y[i]:
-                    Train[label].append(X[i])
-                    
+ 
+        def train(self, X, Y):
+         '''
+         Collect the data and calculate mean and standard variation
+         for each class. Record them for later use in prediction.
+         '''
+         # TODO: implement code.
+         Train = {}
+         for label in self.classes:
+             Train[label] = []
+         for label in Train:
+             for i in range(len(X)):
+                 if label == Y[i]:
+                     Train[label].append(X[i])
+                     
         self.Statistics = {label :{} for label in self.classes} 
         for label in self.Statistics:
             self.Statistics[label]['mean'] = np.mean(Train[label],axis = 0)
