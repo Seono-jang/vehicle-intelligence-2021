@@ -58,10 +58,27 @@ class Vehicle(object):
 
         # Note that the return value is a trajectory, where a trajectory
         # is a list of Vehicle objects with two elements.
-        return [
-            Vehicle(self.lane, self.s, self.v, self.a, self.state),
-            Vehicle(self.lane, self.position_at(1), self.v, 0, self.state)
-        ]
+        possible_successor_states = self.successor_states()
+        costs = []
+        
+        for state in possible_successor_states :
+            trajectory = self.generate_trajectory(state, predictions)
+            cost = calculate_cost(self, trajectory, predictions)
+            costs.append({'state': state, 'cost' : cost, 'trajectory' : trajectory})
+        
+        best_next_state = None
+        min_cost = 9999999
+        
+        for x in costs:
+            if x['cost'] < min_cost:
+                min_cost = x['cost']
+                best_next_state = x['state']
+                best_next_trajectory = x['trajectory']
+        
+            
+            
+           
+        return best_next_trajectory
 
     def successor_states(self):
         '''
