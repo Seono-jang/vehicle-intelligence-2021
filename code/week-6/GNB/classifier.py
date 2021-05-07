@@ -34,6 +34,22 @@ class GNB():
         for each class. Record them for later use in prediction.
         '''
         # TODO: implement code.
+        Train = {}
+        for label in self.classes:
+            Train[label] = []
+        for label in Train:
+            for i in range(len(X)):
+                if label == Y[i]:
+                    Train[label].append(X[i])
+                    
+        self.Statistics = {label :{} for label in self.classes} 
+        for label in self.Statistics:
+            self.Statistics[label]['mean'] = np.mean(Train[label],axis = 0)
+            self.Statistics[label]['std'] = np.std(Train[label],axis = 0)
+            
+        return self.Statistics 
+        
+        
 
     # Given an observation (s, s_dot, d, d_dot), predict which behaviour
     # the vehicle is going to take using GNB.
@@ -46,5 +62,21 @@ class GNB():
         Return the label for the highest conditional probability.
         '''
         # TODO: implement code.
-        return "keep"
+        probs = {}
+        for label in self.classes:
+            prob = 1
+            for i in range(len(observation)):
+                prob *= gaussian_prob(observation[i], self.Statistics[label]['mean'][i], self.Statistics[label]['std'][i])
+            probs[label] = prob
+        
+        prediction = max(probs,key=probs.get)
+        
+        
+            
+        
+                    
+            
+            
+        
+        return prediction
 
