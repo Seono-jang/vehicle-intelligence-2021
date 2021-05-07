@@ -43,8 +43,8 @@
 
  - 학습된 데이터로부터 구한 평균/ 분산값을 이용해 Input Data가 어떠한 Action을 취하는지 찾아내는 알고리즘입니다.
 
-    # Given an observation (s, s_dot, d, d_dot), predict which behaviour
-    # the vehicle is going to take using GNB.
+        # Given an observation (s, s_dot, d, d_dot), predict which behaviour
+        # the vehicle is going to take using GNB.
     
        def predict(self, observation):
         '''
