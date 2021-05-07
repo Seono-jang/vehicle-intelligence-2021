@@ -1,74 +1,193 @@
-# Week 6 - Prediction & Behaviour Planning
+# HW_05 Prediction & Behaviour Planning
 
----
+## Assignment 1 - Gaussian Naive Bayse
 
-## Assignment #1
-
-Under the directory [./GNB](./GNB), you are given two Python modules:
-
-* `prediction.py`: the main module you run. The `main()` function does two things: (1) read an input file ([`train.json`](./GNB/train.json)) and train the GNB (Gaussian Naive Bayes) classifier using the data stored in it, and (2) read another input file ([`test.json`](./GNB/test.json)) and make predictions for a number of data points. The accuracy measure is taken and displayed.
-* `classifier.py`: main implementation of the GNB classifier. You shall implement two methods (`train()` and `precict()`), which are used to train the classifier and make predictions, respectively.
-
-Both input files ([`train.json`](./GNB/train.json) and [`test.json`](./GNB/test.json)) have the same format, which is a JSON-encoded representation of training data set and test data set, respectively. The format is shown below:
-
-```
-{
-	"states": [[s_1, d_1, s_dot_1, d_dot_1],
-	           [s_2, d_2, s_dot_2, d_dot_2],
-	           ...
-	           [s_n, d_n, s_dot_n, d_dot_n]
-	          ],
-	"labels": [L_1, L_2, ..., L_n]
-}
-```
-
-The array `"states"` have a total of `n` items, each of which gives a (hypothetically) measured state of a vehicle, where `s_i` and `d_i` denote its position in the Frenet coordinate system. In addition, `s_dot_i` and `d_dot_i` give their first derivates, respectively. For each measured state, a label is associated (given in the `"labels"` array) that represents the vehicle's behaviour. The label is one of `"keep"`, `"left"`, and `"right"`, which denote keeping the current lane, making a left turn, and making a right turn, respectively.
-
-The training set has a total of 750 data points, whereas the test set contains 250 data points with the ground truth contained in `"labels"`.
-
-The GNB classifier is trained by computing the mean and variance of each component in the state variable for each observed behaviour. Later it is used to predict the behaviour by computing the Gaussian probability of an observed state for each behaviour and taking the maximum. You are going to implement that functionality. For convcenience, a separate function `gaussian_prob()` is already given in the module `classifier.py`.
+- 과제 목표
+    GNB(Gaussian Naive Bayse)를 활용한 Prediction 알고리즘은 수집된 데이터를 활용하여 [좌회전/차선유지/우회전] 상황에 대한 [s/d/s_dot/d_dot] 값에 대한 평균값과 분산값을 구하고 이 학습 데이터를 활용하여 Input Data가 어떠한 Action을 취하고 있는지 예측하는 알고리즘 입니다.
 
 
----
 
-## Assignment #2
+(1) Trainning Algorithm
 
-Under the directory [./BP](./BP), you are given four Python modules:
+ - 주어진 학습 Data 값을 활용해 각각 Action에 따른 [s, d, s_dot, d_dot] 값의 평균/분산을 구하는 알고리즘입니다.
 
-* `simulate_behavior.py`: the main module you run. It instantiates a simple text-based simulation environment and runs it using the configuration specified in the same module.
-* `road.py`: `class Road` is implemented here. It captures the state of the simulated road with a number of vehicles (including the ego) running on it, and visualizes it using terminal output.
-* `vehicle.py`: `class Vehicle` implements the states of a vehicle and its transition, along with the vehicle's dynamics based on a simple kinematic assumption. Note that a vehicle's trajectory is represented by two instances of object of this class, where the first one gives the current state and the second one predicts the state that the vehicle is going to be in after one timestep.
-* `cost_functions.py`: implementation of cost functions governing the state transition of the ego vehicle. The main job required for your assignment is to provide an adequate combination of cost functions by implementing them in this module.
+    def train(self, X, Y):
+        '''
+        Collect the data and calculate mean and standard variation
+        for each class. Record them for later use in prediction.
+        '''
+        # TODO: implement code.
+        Train = {}
+        for label in self.classes:
+            Train[label] = []
+        for label in Train:
+            for i in range(len(X)):
+                if label == Y[i]:
+                    Train[label].append(X[i])
+                    
+        self.Statistics = {label :{} for label in self.classes} 
+        for label in self.Statistics:
+            self.Statistics[label]['mean'] = np.mean(Train[label],axis = 0)
+            self.Statistics[label]['std'] = np.std(Train[label],axis = 0)
+            
+        return self.Statistics 
 
-### Task 1
+ - for 문을 이용해 데이터를 [좌회전 / 차선유지 / 우회전]에 따라 각각 분류 하였습니다.
+ - 분류된 각 데이터에 대한 평균과 분산을 구하도록 하였습니다.
 
-Implement the method `choose_next_state()` in `vehicle.py`. It should
 
-* determine which state transitions are possible from the current state (`successor_states()` function in the same module will be helpful),
-* calculate cost for each state transition using the trajectory generated for each behaviour, and
-* select the minimum cost trajectory and return it.
 
-Note that you must return a planned trajectory (as described above) instead of the state that the vehicle is going to be in.
+(2) Prediction Algorithm
 
-### Task 2
+ - 학습된 데이터로부터 구한 평균/ 분산값을 이용해 Input Data가 어떠한 Action을 취하는지 찾아내는 알고리즘입니다.
 
-In `cost_functions.py`, templates for two different cost functions (`goal_distance_cost()` and `inefficiency_cost()`) are given. They are intended to capture the cost of the trajectory in terms of
+    # Given an observation (s, s_dot, d, d_dot), predict which behaviour
+    # the vehicle is going to take using GNB.
+    def predict(self, observation):
+        '''
+        Calculate Gaussian probability for each variable based on the
+        mean and standard deviation calculated in the training process.
+        Multiply all the probabilities for variables, and then
+        normalize them to get conditional probabilities.
+        Return the label for the highest conditional probability.
+        '''
+        # TODO: implement code.
+        probs = {}
+        for label in self.classes:
+            prob = 1
+            for i in range(len(observation)):
+                prob *= gaussian_prob(observation[i], self.Statistics[label]['mean'][i], self.Statistics[label]['std'][i])
+            probs[label] = prob
+        
+        prediction = max(probs,key=probs.get)
+        
+        
 
-* the lateral distance of the vehicle's lane selection from the goal position, and
-* the time expected to be taken to reach the goal (because of different lane speeds),
+        return prediction
 
-respectively.
+ - 학습 데이터로 부터 얻은 [s, d, s_dot, d_dot]의 평균값과 분산에 따른 각 Action에 대한 Gaussian 확률 분포를 계산하여 가장 확률이 큰 값을 Prediction Action으로 리턴한다.
 
-Note that the range of cost functions should be carefully defined so that they can be combined by a weighted sum, which is done in the function `calculate_cost()` (to be used in `choose_next_state()` as described above). In computing the weighted sum, a set of weights are used. For example, `REACH_GOAL` and `EFFICIENCY` are already defined (but initialized to zero values). You are going to find out a good combination of weights by an empirical manner.
 
-You are highly encouraged to experiment with your own additional cost functions. In implementing cost functions, a trajectory's summary (defined in `TrajectoryData` and given by `get_helper_data()`) can be useful.
 
-You are also invited to experiment with a number of different simulation settings, especially in terms of
 
-* number of lanes
-* lane speed settings (all non-ego vehicles follow these)
-* traffic density (governing the number of non-ego vehicles)
 
-and so on.
 
-Remember that our state machine should be geared towards reaching the goal in an *efficient* manner. Try to compare a behaviour that switches to the goal lane as soon as possible (note that the goal position is in the slowest lane in the given setting) and one that follows a faster lane and move to the goal lane as the remaining distance decreases. Observe different behaviour taken by the ego vehicle when different weights are given to different cost functions, and also when other cost metrics (additional cost functions) are used.
+## Assignment 2 - Behavior Planning
+
+- 과제 목표
+    Behaviour Planning은 설정된 Cost Function(목적지까지의 종/횡 거리, 차선별 속도)에 따라 차량 거동에 있어 최적의 Trajectory를 찾아가는 알고리즘입니다.
+
+
+(1) Choose Next State
+
+ - choose_next_state 함수는 현재 차량의 상태에서 다음 state로 넘어갈 수 있는 모든 Trajectory를 고려할때 가장 cost가 작은 궤적을 찾는 함수입니다.
+
+
+    def choose_next_state(self, predictions):
+        '''
+        Implement the transition function code for the vehicle's
+        behaviour planning finite state machine, which operates based on
+        the cost function (defined in a separate module cost_functions.py).
+
+        INPUTS: A predictions dictionary with vehicle id keys and predicted
+            vehicle trajectories as values. Trajectories are a list of
+            Vehicle objects representing the vehicle at the current timestep
+            and one timestep in the future.
+        OUTPUT: The the best (lowest cost) trajectory corresponding to
+            the next ego vehicle state.
+
+        Functions that will be useful:
+        1. successor_states():
+            Returns a vector of possible successor states
+            for the finite state machine.
+
+        2. generate_trajectory(self, state, predictions):
+            Returns a vector of Vehicle objects representing a
+            vehicle trajectory, given a state and predictions.
+            Note that trajectories might be empty if no possible trajectory
+            exists for the state; for example, if the state is LCR, but a
+            vehicle is occupying the space to the ego vehicle's right,
+            then there is no possible trajectory without first
+            transitioning to another state.
+
+        3. calculate_cost(vehicle, trajectory, predictions):
+            Imported from cost_functions.py, computes the cost for
+            a trajectory.
+        '''
+
+        # TODO: implement state transition function based on the cost
+        #       associated with each transition.
+
+        # Note that the return value is a trajectory, where a trajectory
+        # is a list of Vehicle objects with two elements.
+        possible_successor_states = self.successor_states()
+        costs = []
+        
+        for state in possible_successor_states :
+            trajectory = self.generate_trajectory(state, predictions)
+            cost = calculate_cost(self, trajectory, predictions)
+            costs.append({'state': state, 'cost' : cost, 'trajectory' : trajectory})
+        
+        best_next_state = None
+        min_cost = 9999999
+        
+        for x in costs:
+            if x['cost'] < min_cost:
+                min_cost = x['cost']
+                best_next_state = x['state']
+                best_next_trajectory = x['trajectory']
+        
+
+        return best_next_trajectory
+
+ - 현재 차량 위치에서 천이 가능한 다음 state들은 successor_state 함수로 부터 받아 올 수 있습니다.
+ - 이후 다음 state로 천이 할때의 Trajectory를 generate_trajectory함수로 생성하고 이 Trajectory에 대한 Cost를 미리 지정된 calculate_cost 함수를 사용하여 계산합니다.
+ - 각각의 Trajectory에 대해서 계산된 cost가 가장 작은 Trajectory를 찾아내고 이 Trajectory를 best_next_Trajectory로 지정하여 리턴합니다.
+
+
+
+(2) Cost Function
+
+ - Cost Fuction은 goal까지의 종/횡 방향 거리에 대한 Cost Function 그리고 지정된 차선에서의 제한된 속도에 따른 Cost Function 두가지를 사용하여 정의 됩니다.
+
+ 1) goal_distance_cost
+
+
+def goal_distance_cost(vehicle, trajectory, predictions, data):
+    '''
+    Cost increases based on distance of intended lane (for planning a
+    lane change) and final lane of a trajectory.
+    Cost of being out of goal lane also becomes larger as vehicle approaches
+    the goal distance.
+    '''
+    lat_offset = abs(2*vehicle.goal_lane - data.intended_lane - data.final_lane)
+    distance = abs(data.end_distance_to_goal)
+    
+    if distance:
+        cost = 1-exp(-lat_offset/ distance)
+    else:
+        cost = 1
+    
+    return cost
+
+    - goal_distance_cost는 차량의 현재 차선이 Goal의 차선과 멀수록 그리고 Goal과의 거리가 가까울 수록 큰 값의 Cost를 리턴하는 함수이며 Cost Function은 exponential 함수로 나타내었습니다.
+    - Cost Function에 따라 distance 값이 가까워 질 수록 Cost를 크게 생성하여 Cost를 작은 방향으로 만들어 주기 위해 Goal_Lane으로 차선을 변경하게 해주도록 하였습니다.
+
+ 2) inefficiency_cost
+
+def inefficiency_cost(vehicle, trajectory, predictions, data):
+    '''
+    Cost becomes higher for trajectories with intended lane and final lane
+    that have slower traffic.
+    '''
+    intended_speed = velocity(predictions, data.intended_lane) or vehicle.target_speed
+    final_speed =  velocity(predictions, data.final_lane) or vehicle.target_speed
+    
+    cost = float((2*vehicle.target_speed - intended_speed - final_speed)/vehicle.target_speed)
+    
+    
+    return cost
+
+    - inefficiency cost 함수는 차량이 현재 위치한 Lane의 속도가 느릴 수록 큰 Cost를 리턴하는 함수입니다.
+    - 도착지까지 거리가 멀 경우 가장 빠른 속도를 유지할 수 있는 차선에서 주행을 하도록 하였습니다.
+    - Cost Function은 차량의 최고 속도와 현재 속도 사이의 선형함수를 사용하여 Cost를 작은 방향으로 만들어 주기 위해 최고 속도와 현재 속도의 차가 작은 차선으로 변경 할 수 있도록 하였습니다.
