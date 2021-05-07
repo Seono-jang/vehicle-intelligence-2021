@@ -11,7 +11,7 @@
  - 경로 생성 알고리즘에서 Value 값과 Policy를 계산하는 부분입니다.
 
 
-'''python
+
 
         for y, x, t in p:
             # Mark the final state with a special value that we will
@@ -21,14 +21,14 @@
                 value[(t,y,x)] = 0
                 policy[(t,y,x)] = -999
                 change = True
-'''
+
   
 
  - for 문을 통해서 맵 상의 각각의 좌표값을 받아와 반복문으로 실행하여 각 좌표에 대한 Value값과 Policy를 계산합니다.
  - 먼저 좌표 y,x 가 목적지에 도착한다면 Value값을 0으로 설정해 주어 목적지에서의 Cost가 0이 되도록 만들어 줍니다.
  - 목적지의 Policy는 경로 탐색이 끝났다는 것을 의미 하기위해 임의로 -999의 값을 설정해주었습니다.
 
-'''python
+
             elif grid[(y, x)] == 0:
                 # TODO: implement code.
                 for i in range(len(action)):
@@ -44,7 +44,7 @@
                                 value[(t,y,x)] = v2
                                 policy[(t,y,x)] = action[i]
                                 change = True
-'''
+
 
  - for 문을 이용하여 좌회전 직진 우회전의 Action들이 취해졌을때의 Heading과 (y,x) 값을 계산합니다.
  - Heading 값을 상하좌우 4방향으로 표기하기 위해 Action 후 Heading에 대한 값인 t2를 기존 Heading 값에 Action에 대한 Heading 변화량을 더해 준 후 4에 대한 나머지 값으로 나타내었습니다.
@@ -53,7 +53,7 @@
 
 (2) 최적 경로 생성
 
-'''python
+
     # Now navigate through the policy table to generate a
     # sequence of actions to take to follow the optimal path.
     # TODO: implement code.
@@ -73,7 +73,7 @@
        policy2D[(y,x)] = '*'
        
     
-'''
+
 
  - 3차원으로 계산된 Policy를 2차원 평면에서의 경로를 나타내기 위한 알고리즘입니다.
  - 도착지 전 까지의 Policy2D값을 계산하기 위해 while문을 사용하였으며 (t,y,x)의 Policy값을 받아와 Policy2D에 투영하고 Action에 따른 Heading값을 구하여 Heading 방향으로 진행 후 좌표를 나타내었습니다.
