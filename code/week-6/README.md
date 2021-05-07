@@ -86,19 +86,19 @@
  - choose_next_state 함수는 현재 차량의 상태에서 다음 state로 넘어갈 수 있는 모든 Trajectory를 고려할때 가장 cost가 작은 궤적을 찾는 함수입니다.
 
 
-    def choose_next_state(self, predictions):
-        '''
-        Implement the transition function code for the vehicle's
-        behaviour planning finite state machine, which operates based on
-        the cost function (defined in a separate module cost_functions.py).
-
-        INPUTS: A predictions dictionary with vehicle id keys and predicted
-            vehicle trajectories as values. Trajectories are a list of
-            Vehicle objects representing the vehicle at the current timestep
-            and one timestep in the future.
-        OUTPUT: The the best (lowest cost) trajectory corresponding to
-            the next ego vehicle state.
-
+       def choose_next_state(self, predictions):
+             '''
+            Implement the transition function code for the vehicle's
+            behaviour planning finite state machine, which operates based on
+            the cost function (defined in a separate module cost_functions.py).
+  
+          INPUTS: A predictions dictionary with vehicle id keys and predicted
+             vehicle trajectories as values. Trajectories are a list of
+             Vehicle objects representing the vehicle at the current timestep
+             and one timestep in the future.
+         OUTPUT: The the best (lowest cost) trajectory corresponding to
+             the next ego vehicle state.
+ 
         Functions that will be useful:
         1. successor_states():
             Returns a vector of possible successor states
@@ -191,6 +191,6 @@
     
     return cost
 
-    - inefficiency cost 함수는 차량이 현재 위치한 Lane의 속도가 느릴 수록 큰 Cost를 리턴하는 함수입니다.
-    - 도착지까지 거리가 멀 경우 가장 빠른 속도를 유지할 수 있는 차선에서 주행을 하도록 하였습니다.
-    - Cost Function은 차량의 최고 속도와 현재 속도 사이의 선형함수를 사용하여 Cost를 작은 방향으로 만들어 주기 위해 최고 속도와 현재 속도의 차가 작은 차선으로 변경 할 수 있도록 하였습니다.
+   - inefficiency cost 함수는 차량이 현재 위치한 Lane의 속도가 느릴 수록 큰 Cost를 리턴하는 함수입니다.
+   - 도착지까지 거리가 멀 경우 가장 빠른 속도를 유지할 수 있는 차선에서 주행을 하도록 하였습니다.
+   - Cost Function은 차량의 최고 속도와 현재 속도 사이의 선형함수를 사용하여 Cost를 작은 방향으로 만들어 주기 위해 최고 속도와 현재 속도의 차가 작은 차선으로 변경 할 수 있도록 하였습니다.
