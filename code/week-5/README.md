@@ -10,6 +10,7 @@
  
  - 경로 생성 알고리즘에서 Value 값과 Policy를 계산하는 부분입니다.
 '''python
+
         for y, x, t in p:
             # Mark the final state with a special value that we will
             # use in generating the final path policy.
