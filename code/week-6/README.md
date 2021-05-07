@@ -11,7 +11,9 @@
 
  - 주어진 학습 Data 값을 활용해 각각 Action에 따른 [s, d, s_dot, d_dot] 값의 평균/분산을 구하는 알고리즘입니다.
 
-    def train(self, X, Y):
+
+
+      def train(self, X, Y):
         '''
         Collect the data and calculate mean and standard variation
         for each class. Record them for later use in prediction.
@@ -43,7 +45,8 @@
 
     # Given an observation (s, s_dot, d, d_dot), predict which behaviour
     # the vehicle is going to take using GNB.
-    def predict(self, observation):
+    
+       def predict(self, observation):
         '''
         Calculate Gaussian probability for each variable based on the
         mean and standard deviation calculated in the training process.
@@ -153,7 +156,7 @@
  1) goal_distance_cost
 
 
-def goal_distance_cost(vehicle, trajectory, predictions, data):
+   def goal_distance_cost(vehicle, trajectory, predictions, data):
     '''
     Cost increases based on distance of intended lane (for planning a
     lane change) and final lane of a trajectory.
@@ -175,7 +178,7 @@ def goal_distance_cost(vehicle, trajectory, predictions, data):
 
  2) inefficiency_cost
 
-def inefficiency_cost(vehicle, trajectory, predictions, data):
+   def inefficiency_cost(vehicle, trajectory, predictions, data):
     '''
     Cost becomes higher for trajectories with intended lane and final lane
     that have slower traffic.
