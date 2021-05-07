@@ -156,40 +156,40 @@
  1) goal_distance_cost
 
 
-   def goal_distance_cost(vehicle, trajectory, predictions, data):
-    '''
-    Cost increases based on distance of intended lane (for planning a
-    lane change) and final lane of a trajectory.
-    Cost of being out of goal lane also becomes larger as vehicle approaches
-    the goal distance.
-    '''
-    lat_offset = abs(2*vehicle.goal_lane - data.intended_lane - data.final_lane)
-    distance = abs(data.end_distance_to_goal)
+        def goal_distance_cost(vehicle, trajectory, predictions, data):
+         '''
+         Cost increases based on distance of intended lane (for planning a
+         lane change) and final lane of a trajectory.
+         Cost of being out of goal lane also becomes larger as vehicle approaches
+         the goal distance.
+         '''
+         lat_offset = abs(2*vehicle.goal_lane - data.intended_lane - data.final_lane)
+         distance = abs(data.end_distance_to_goal)
     
-    if distance:
-        cost = 1-exp(-lat_offset/ distance)
-    else:
-        cost = 1
+         if distance:
+             cost = 1-exp(-lat_offset/ distance)
+         else:
+             cost = 1
     
-    return cost
+         return cost
 
     - goal_distance_cost는 차량의 현재 차선이 Goal의 차선과 멀수록 그리고 Goal과의 거리가 가까울 수록 큰 값의 Cost를 리턴하는 함수이며 Cost Function은 exponential 함수로 나타내었습니다.
     - Cost Function에 따라 distance 값이 가까워 질 수록 Cost를 크게 생성하여 Cost를 작은 방향으로 만들어 주기 위해 Goal_Lane으로 차선을 변경하게 해주도록 하였습니다.
 
  2) inefficiency_cost
 
-   def inefficiency_cost(vehicle, trajectory, predictions, data):
-    '''
-    Cost becomes higher for trajectories with intended lane and final lane
-    that have slower traffic.
-    '''
-    intended_speed = velocity(predictions, data.intended_lane) or vehicle.target_speed
-    final_speed =  velocity(predictions, data.final_lane) or vehicle.target_speed
+        def inefficiency_cost(vehicle, trajectory, predictions, data):
+         '''
+         Cost becomes higher for trajectories with intended lane and final lane
+         that have slower traffic.
+         '''
+         intended_speed = velocity(predictions, data.intended_lane) or vehicle.target_speed
+         final_speed =  velocity(predictions, data.final_lane) or vehicle.target_speed
     
-    cost = float((2*vehicle.target_speed - intended_speed - final_speed)/vehicle.target_speed)
+         cost = float((2*vehicle.target_speed - intended_speed - final_speed)/vehicle.target_speed)
     
     
-    return cost
+         return cost
 
    - inefficiency cost 함수는 차량이 현재 위치한 Lane의 속도가 느릴 수록 큰 Cost를 리턴하는 함수입니다.
    - 도착지까지 거리가 멀 경우 가장 빠른 속도를 유지할 수 있는 차선에서 주행을 하도록 하였습니다.
